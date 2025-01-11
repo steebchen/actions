@@ -1,0 +1,24 @@
+name: autofix
+description: Automatically fix formatting issues
+inputs:
+  token:
+    description: GitHub token
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: "Metadata"
+      id: metadata
+      if: ${{ github.actor == 'dependabot[bot]' }}
+      uses: dependabot/fetch-metadata@v2.2.0
+      with:
+        github-token: "${{ inputs.token }}"
+
+    - name: "Enable auto-squash"
+      shell: bash
+      id: enable-auto-squash
+      if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+      run: gh pr merge --auto --squash "$PR_URL"
+      env:
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        GITHUB_TOKEN: ${{ inputs.token }}
