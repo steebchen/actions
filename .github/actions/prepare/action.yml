@@ -1,0 +1,37 @@
+name: prepare
+description: |
+  Set up the environment with .tool-versions and caching, plus installing dependencies.
+runs:
+  using: composite
+  steps:
+    - name: Collect versions
+      shell: bash
+      run: |
+        echo "nodejs_version=$(cat .tool-versions | grep 'nodejs' | cut -d ' ' -f 2)" >> "$GITHUB_ENV"
+        echo "pnpm_version=$(cat .tool-versions | grep 'pnpm' | cut -d ' ' -f 2)" >> "$GITHUB_ENV"
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4.0.0
+      with:
+        version: ${{ env.pnpm_version }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4.0.0
+      with:
+        node-version: ${{ env.nodejs_version }}
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Cache
+      uses: actions/cache@v4.0.0
+      with:
+        path: |
+          ${{ github.workspace }}/.next/cache
+        key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-
+          ${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

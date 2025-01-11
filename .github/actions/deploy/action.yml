@@ -1,0 +1,54 @@
+name: deploy
+description: Deploy on CloudFlare Pages
+inputs:
+  CF_ACCOUNT_ID:
+    description: CloudFlare Account ID
+    required: true
+  CF_ZONE_ID:
+    description: CloudFlare Zone ID
+    required: false
+  CF_CACHE_API_KEY:
+    description: CloudFlare Cache Purge Key
+    required: false
+  CF_DEPLOY_API_KEY:
+    description: CloudFlare Deploy Key
+    required: true
+  SENTRY_AUTH_TOKEN:
+    description: Sentry Auth Token for sourcemaps
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Build
+      shell: bash
+      run: pnpm next-on-pages
+      env:
+        SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
+
+    - name: Deploy
+      uses: cloudflare/wrangler-action@v3.11.0
+      with:
+        apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
+        accountId: ${{ inputs.CF_ACCOUNT_ID }}
+        command: pages deploy .vercel/output/static/
+        workingDirectory: "."
+
+    - name: Wait
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      shell: bash
+      run: sleep 10
+
+    - name: Purge Cloudflare Cache
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && inputs.CF_CACHE_API_KEY != '' && inputs.CF_ZONE_ID != ''
+      shell: bash
+      run: |
+        set -eux
+        res=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" -H "Authorization: Bearer $CF_CACHE_API_KEY" -d '{ "purge_everything": true }')
+        if ! echo "$res" | jq -e '.success'; then
+          echo "$res" | jq -r '.errors[]'
+          exit 1
+        fi
+        echo "Cache purged"
+      env:
+        CF_CACHE_API_KEY: ${{ inputs.CF_CACHE_API_KEY }}
+        CF_ZONE_ID: ${{ inputs.CF_ZONE_ID }}
