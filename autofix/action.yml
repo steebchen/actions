@@ -1,0 +1,55 @@
+name: autofix
+description: Automatically fix formatting issues
+inputs:
+  token:
+    description: GitHub token
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token }}
+        ref: "${{ github.event.pull_request.head.ref }}"
+
+    - name: Prepare
+      uses: ./prepare@main
+
+    - name: Run format
+      shell: bash
+      run: pnpm format
+
+    - name: Commit and push changes
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        set -eux
+
+        msg="chore(autofix): apply diff"
+        last_commit_message=$(git log -1 --pretty=%B)
+        if [[ -z "$last_commit_message" ]]; then
+          echo "No last commit message found"
+          exit 1
+        fi
+
+        if git diff --exit-code; then
+          echo "No changes to commit"
+          exit 0
+        fi
+
+        if [[ "$last_commit_message" == "$msg" ]]; then
+          git status
+          git diff
+          echo "Detected infinite loop, exiting"
+          exit 1
+        fi
+
+        git config --local user.email "contact@luca-steeb.com"
+        git config --local user.name "Luca Steeb (bot)"
+
+        git add .
+        git commit -m "$msg"
+        git pull --rebase origin ${{ github.event.pull_request.head.ref }} || true
+        git push origin refs/heads/${{ github.event.pull_request.head.ref }}
