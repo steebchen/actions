@@ -29,27 +29,32 @@ runs:
 
         msg="chore(autofix): apply diff"
         last_commit_message=$(git log -1 --pretty=%B)
+        
         if [[ -z "$last_commit_message" ]]; then
           echo "No last commit message found"
           exit 1
         fi
-
+        
+        # Skip processing if there's nothing to commit
         if git diff --exit-code; then
           echo "No changes to commit"
           exit 0
         fi
-
+        
+        # Prevent infinite loop by checking message
         if [[ "$last_commit_message" == "$msg" ]]; then
           git status
           git diff
           echo "Detected infinite loop, exiting"
           exit 1
         fi
-
+        
         git config --local user.email "contact@luca-steeb.com"
         git config --local user.name "Luca Steeb (bot)"
-
+        
         git add .
         git commit -m "$msg"
-        git pull --rebase origin ${{ github.event.pull_request.head.ref }} || true
-        git push origin refs/heads/${{ github.event.pull_request.head.ref }}
+        
+        REPO_REF=${{ github.event.pull_request.head.ref || github.ref_name }}
+        git pull --rebase origin "$REPO_REF" || true
+        git push origin "$REPO_REF"
