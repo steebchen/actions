@@ -1,0 +1,40 @@
+name: "TODO to Issue Composite Action"
+description: "A reusable action to convert TODOs to GitHub issues and manage updates"
+
+inputs:
+  token:
+    description: "GitHub token for authentication"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ inputs.token }}
+
+    - name: TODO to Issue
+      uses: alstr/todo-to-issue-action@v5
+      with:
+        INSERT_ISSUE_URLS: true
+        CLOSE_ISSUES: true
+        AUTO_ASSIGN: true
+        TOKEN: ${{ inputs.token }}
+
+    - name: Set Git user
+      shell: bash
+      run: |
+        git config --global user.name "Luca Steeb"
+        git config --global user.email "contact@luca-steeb.com"
+
+    - name: Commit and Push Changes
+      shell: bash
+      run: |
+        git add -A
+        if [[ `git status --porcelain` ]]; then
+          git commit -m "chore(todo): add GitHub issue links to TODOs"
+          git push origin main
+        else
+          echo "No changes to commit"
+        fi
