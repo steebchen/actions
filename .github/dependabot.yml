@@ -1,26 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/autofix"
     schedule:
       interval: "monthly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/automerge"
-    schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/deploy"
-    schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/prepare"
-    schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/todo"
-    schedule:
-      interval: "monthly"
+    directories:
+      -  "automerge"
+      - "deploy"
+      - "prepare"
+      - "todo"
