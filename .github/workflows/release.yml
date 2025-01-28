@@ -17,6 +17,8 @@ jobs:
       - name: Get the latest tag
         id: get-latest-tag
         run: |
+          set -eux
+          
           response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/tags")
@@ -30,6 +32,8 @@ jobs:
       - name: Calculate next minor version
         id: compute-next-version
         run: |
+          set -eux
+          
           latest_tag=${{ env.latest_tag }}
           if [[ $latest_tag =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             major="${BASH_REMATCH[1]}"
@@ -49,6 +53,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -eux
+          
           new_tag=${{ env.new_tag }}
           release_response=$(curl -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
