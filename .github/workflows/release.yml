@@ -31,7 +31,7 @@ jobs:
         id: compute-next-version
         run: |
           latest_tag=${{ env.latest_tag }}
-          if [[ $latest_tag =~ ^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$ ]]; then
+          if [[ $latest_tag =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             major="${BASH_REMATCH[1]}"
             minor="${BASH_REMATCH[2]}"
             patch="${BASH_REMATCH[3]}"
