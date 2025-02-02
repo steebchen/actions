@@ -57,7 +57,7 @@ runs:
         CF_ZONE_ID: ${{ inputs.CF_ZONE_ID }}
 
     - name: Notify
-      uses: ./notify
+      uses: steebchen/actions/notify@v0.4.2
       with:
         message: deploy ${{ job.status }}
         webhook_url: ${{ inputs.NOTIFICATION_URL }}
