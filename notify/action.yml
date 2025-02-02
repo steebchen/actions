@@ -4,7 +4,7 @@ inputs:
   message:
     description: Message
     required: true
-  token:
+  webhook_url:
     description: Notification Webhook URL
     required: true
 runs:
@@ -21,7 +21,7 @@ runs:
       if: always()
       uses: slackapi/slack-github-action@v2.0.0
       with:
-        webhook: ${{ inputs.token }}
+        webhook: ${{ inputs.webhook_url }}
         webhook-type: incoming-webhook
         payload: |
           text: "${{ env.package_name }}: ${{ inputs.message }}"

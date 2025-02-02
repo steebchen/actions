@@ -60,4 +60,4 @@ runs:
       uses: ./notify
       with:
         message: deploy ${{ job.status }}
-        token: ${{ inputs.NOTIFICATION_URL }}
+        webhook_url: ${{ inputs.NOTIFICATION_URL }}
