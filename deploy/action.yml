@@ -52,3 +52,8 @@ runs:
       env:
         CF_CACHE_API_KEY: ${{ inputs.CF_CACHE_API_KEY }}
         CF_ZONE_ID: ${{ inputs.CF_ZONE_ID }}
+
+    - name: Notify
+      uses: ./notify
+      with:
+        message: deploy ${{ job.status }}

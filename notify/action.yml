@@ -1,0 +1,33 @@
+name: notify
+description: Notify
+inputs:
+  message:
+    description: Message
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Gather info
+      shell: bash
+      run: |
+        # read package.json name and save it
+        package_name=$(cat package.json | jq -r '.name')
+        echo "package_name=$package_name" >> $GITHUB_ENV
+
+    - name: Notify Slack
+      if: always()
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          text: "${{ env.package_name }}: ${{ inputs.message }}"
+          blocks:
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*${{ env.package_name }} deploy ${{ job.status }}*"
+            - type: section
+              text:
+                type: mrkdwn
+                text: ":rocket: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
