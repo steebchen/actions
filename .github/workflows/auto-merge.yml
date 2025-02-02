@@ -12,6 +12,9 @@ jobs:
       repository-projects: write
       contents: write
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Auto Merge
         uses: ./automerge
         with:
