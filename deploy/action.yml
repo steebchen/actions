@@ -58,6 +58,7 @@ runs:
 
     - name: Notify
       uses: steebchen/actions/notify@v0.4.2
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         message: deploy ${{ job.status }}
         webhook_url: ${{ inputs.NOTIFICATION_URL }}
