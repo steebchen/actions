@@ -24,12 +24,15 @@ runs:
         webhook: ${{ inputs.webhook_url }}
         webhook-type: incoming-webhook
         payload: |
-          text: "${{ env.package_name }}: ${{ inputs.message }}"
           blocks:
             - type: section
               text:
                 type: mrkdwn
-                text: "*${{ env.package_name }} deploy ${{ job.status }}*"
+                text: "${{ inputs.message }}"
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*${{ env.package_name }} ${{ job.status }}*"
             - type: section
               text:
                 type: mrkdwn
