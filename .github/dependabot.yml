@@ -4,8 +4,4 @@ updates:
     schedule:
       interval: "monthly"
     directories:
-      - "/"
-      - "automerge"
-      - "deploy"
-      - "prepare"
-      - "todo"
+      - "**/*"
