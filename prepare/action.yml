@@ -23,7 +23,7 @@ runs:
         cache-dependency-path: pnpm-lock.yaml
 
     - name: Cache
-      uses: actions/cache@v4.2.0
+      uses: actions/cache@v4.2.2
       with:
         path: |
           ${{ github.workspace }}/.next/cache
