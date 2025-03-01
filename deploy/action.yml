@@ -57,7 +57,7 @@ runs:
         CF_ZONE_ID: ${{ inputs.CF_ZONE_ID }}
 
     - name: Notify
-      uses: steebchen/actions/notify@v0.4.2
+      uses: steebchen/actions/notify@v0.4.7
       if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         message: deploy ${{ job.status }}
