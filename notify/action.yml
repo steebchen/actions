@@ -32,7 +32,7 @@ runs:
             - type: section
               text:
                 type: mrkdwn
-                text: "*`${{ env.package_name }}`}*"
+                text: "*`${{ env.package_name }}`*"
             - type: section
               text:
                 type: mrkdwn
