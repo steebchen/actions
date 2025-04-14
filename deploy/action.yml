@@ -70,14 +70,14 @@ runs:
         CF_ZONE_ID: ${{ inputs.CF_ZONE_ID }}
 
     - name: Notify
-      uses: steebchen/actions/notify@v0.5.1
+      uses: steebchen/actions/notify@main
       if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         message: deploy success ✅
         webhook_url: ${{ inputs.NOTIFICATION_URL }}
 
     - name: Notify
-      uses: steebchen/actions/notify@v0.5.1
+      uses: steebchen/actions/notify@main
       if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         message: deploy failed ❌
