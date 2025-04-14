@@ -38,6 +38,7 @@ runs:
         workingDirectory: "."
 
     - name: Check Deployment URL
+      shell: bash
       run: |
         set -eux
         
