@@ -29,12 +29,24 @@ runs:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
 
     - name: Deploy
+      id: deploy
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
         command: pages deploy .vercel/output/static/
         workingDirectory: "."
+
+    - name: Check Deployment URL
+      run: |
+        set -eux
+        
+        echo "Deployment URL: ${{ steps.deploy.outputs.deployment-url }}"
+        
+        # check if it returns success
+        sleep 10
+        
+        curl -s --fail "${{ steps.deploy.outputs.deployment-url }}"
 
     - name: Wait
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
