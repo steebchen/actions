@@ -47,7 +47,7 @@ runs:
         # check if it returns success
         sleep 10
         
-        curl -s --fail -H "Cookie: bypass=true" "${{ steps.deploy.outputs.deployment-url }}"
+        curl -fvs -H "Cookie: bypass=true" "${{ steps.deploy.outputs.deployment-url }}"
 
     - name: Wait
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
