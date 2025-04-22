@@ -24,17 +24,38 @@ runs:
   steps:
     - name: Build
       shell: bash
-      run: pnpm next-on-pages
+      run: |
+        if ! grep -q "next-on-pages" package.json; then
+          pnpm next-on-pages
+          echo "kind=next-on-pages" >> $GITHUB_ENV
+        elif ! grep -q "opennext" package.json; then
+          pnpm opennextjs-cloudflare build
+          echo "kind=opennext" >> $GITHUB_ENV
+        else
+          echo "error: no build command found"
+          exit 1
+        fi
       env:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
 
     - name: Deploy
       id: deploy
+      if: env.kind == 'next-on-pages'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
         command: pages deploy .vercel/output/static/
+        workingDirectory: "."
+
+    - name: Deploy
+      id: deploy
+      if: env.kind == 'opennext'
+      uses: cloudflare/wrangler-action@v3.14.1
+      with:
+        apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
+        accountId: ${{ inputs.CF_ACCOUNT_ID }}
+        command: deploy
         workingDirectory: "."
 
     - name: Check Deployment URL
