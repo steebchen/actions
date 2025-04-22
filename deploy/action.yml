@@ -38,8 +38,8 @@ runs:
       env:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
 
-    - name: Deploy
-      id: deploy
+    - name: Deploy (Next.js)
+      id: deploy_next
       if: env.kind == 'next-on-pages'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
@@ -48,8 +48,8 @@ runs:
         command: pages deploy .vercel/output/static/
         workingDirectory: "."
 
-    - name: Deploy
-      id: deploy
+    - name: Deploy (OpenNext)
+      id: deploy_opennext
       if: env.kind == 'opennext'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
@@ -62,13 +62,18 @@ runs:
       shell: bash
       run: |
         set -eux
-        
-        echo "Deployment URL: ${{ steps.deploy.outputs.deployment-url }}"
-        
+
+        url="${{ steps.deploy_next.outputs.deployment-url }}"
+        if [ -z "$url" ]; then
+          url="${{ steps.deploy_opennext.outputs.deployment-url }}"
+        fi
+
+        echo "Deployment URL: $url"
+
         # check if it returns success
         sleep 10
-        
-        curl -fvs -H "Cookie: bypass=true" "${{ steps.deploy.outputs.deployment-url }}"
+
+        curl -fvs -H "Cookie: bypass=true" "$url"
 
     - name: Wait
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
