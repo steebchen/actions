@@ -49,13 +49,23 @@ runs:
         workingDirectory: "."
 
     - name: Deploy (OpenNext)
-      id: deploy_opennext
-      if: env.kind == 'opennext'
+      id: deploy_opennext_main
+      if: env.kind == 'opennext' && github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
         command: deploy
+        workingDirectory: "."
+
+    - name: Preview (OpenNext)
+      id: deploy_opennext_preview
+      if: env.kind == 'opennext' && github.event_name == 'push' && github.ref != 'refs/heads/main'
+      uses: cloudflare/wrangler-action@v3.14.1
+      with:
+        apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
+        accountId: ${{ inputs.CF_ACCOUNT_ID }}
+        command: upload
         workingDirectory: "."
 
     - name: Check Deployment URL
@@ -65,7 +75,10 @@ runs:
 
         url="${{ steps.deploy_next.outputs.deployment-url }}"
         if [ -z "$url" ]; then
-          url="${{ steps.deploy_opennext.outputs.deployment-url }}"
+          url="${{ steps.deploy_opennext_main.outputs.deployment-url }}"
+        fi
+        if [ -z "$url" ]; then
+          url="${{ steps.deploy_opennext_preview.outputs.deployment-url }}"
         fi
 
         echo "Deployment URL: $url"
