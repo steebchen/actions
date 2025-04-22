@@ -65,7 +65,7 @@ runs:
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
-        command: upload
+        command: versions upload
         workingDirectory: "."
 
     - name: Check Deployment URL
