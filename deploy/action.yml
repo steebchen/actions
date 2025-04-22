@@ -25,10 +25,10 @@ runs:
     - name: Build
       shell: bash
       run: |
-        if ! grep -q "next-on-pages" package.json; then
+        if grep -q "next-on-pages" package.json; then
           pnpm next-on-pages
           echo "kind=next-on-pages" >> $GITHUB_ENV
-        elif ! grep -q "opennext" package.json; then
+        elif grep -q "opennext" package.json; then
           pnpm opennextjs-cloudflare build
           echo "kind=opennext" >> $GITHUB_ENV
         else
