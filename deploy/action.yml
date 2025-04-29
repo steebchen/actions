@@ -29,6 +29,9 @@ runs:
           pnpm next-on-pages
           echo "kind=next-on-pages" >> $GITHUB_ENV
         else
+          if grep -q "opennext" package.json; then
+            pnpm opennextjs-cloudflare build
+          fi
           echo "kind=worker" >> $GITHUB_ENV
         fi
       env:
