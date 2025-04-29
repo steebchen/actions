@@ -34,6 +34,18 @@ runs:
       env:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
 
+    - name: Ensure source maps
+      shell: bash
+      run: |
+        set -eux
+        
+        if [ ! -f wrangler.json ]; then
+          echo "error: no wrangler.json found"
+          exit 1
+        fi
+        
+        cat wrangler.json | jq -r '.upload_source_maps' | grep -q "true"
+
     - name: Deploy (Next.js)
       id: deploy_next
       if: env.kind == 'next-on-pages'
