@@ -69,7 +69,7 @@ runs:
 
     - name: Preview (Worker)
       id: deploy_worker_preview
-      if: env.kind == 'worker' && github.event_name == 'push' && github.ref != 'refs/heads/main'
+      if: env.kind == 'worker' && ((github.event_name == 'push' && github.ref != 'refs/heads/main') || github.event_name == 'pull_request')
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
