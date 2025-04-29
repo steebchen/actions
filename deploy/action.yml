@@ -28,12 +28,8 @@ runs:
         if grep -q "next-on-pages" package.json; then
           pnpm next-on-pages
           echo "kind=next-on-pages" >> $GITHUB_ENV
-        elif grep -q "opennext" package.json; then
-          pnpm opennextjs-cloudflare build
-          echo "kind=opennext" >> $GITHUB_ENV
         else
-          echo "error: no build command found"
-          exit 1
+          echo "kind=worker" >> $GITHUB_ENV
         fi
       env:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
@@ -48,9 +44,9 @@ runs:
         command: pages deploy .vercel/output/static/
         workingDirectory: "."
 
-    - name: Deploy (OpenNext)
-      id: deploy_opennext_main
-      if: env.kind == 'opennext' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    - name: Deploy (Worker)
+      id: deploy_worker_main
+      if: env.kind == 'worker' && github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
@@ -58,9 +54,9 @@ runs:
         command: deploy
         workingDirectory: "."
 
-    - name: Preview (OpenNext)
-      id: deploy_opennext_preview
-      if: env.kind == 'opennext' && github.event_name == 'push' && github.ref != 'refs/heads/main'
+    - name: Preview (Worker)
+      id: deploy_worker_preview
+      if: env.kind == 'worker' && github.event_name == 'push' && github.ref != 'refs/heads/main'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
@@ -75,10 +71,10 @@ runs:
 
         url="${{ steps.deploy_next.outputs.deployment-url }}"
         if [ -z "$url" ]; then
-          url="${{ steps.deploy_opennext_main.outputs.deployment-url }}"
+          url="${{ steps.deploy_worker_main.outputs.deployment-url }}"
         fi
         if [ -z "$url" ]; then
-          url="${{ steps.deploy_opennext_preview.outputs.deployment-url }}"
+          url="${{ steps.deploy_worker_preview.outputs.deployment-url }}"
         fi
 
         echo "Deployment URL: $url"
