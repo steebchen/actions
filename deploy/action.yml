@@ -34,7 +34,7 @@ runs:
       env:
         SENTRY_AUTH_TOKEN: ${{ inputs.SENTRY_AUTH_TOKEN }}
 
-    - name: Ensure source maps
+    - name: Ensure flags
       shell: bash
       run: |
         set -eux
@@ -45,6 +45,7 @@ runs:
         fi
         
         cat wrangler.json | jq -r '.upload_source_maps' | grep -q "true"
+        cat wrangler.json | jq -r '.observability.enabled' | grep -q "true"
 
     - name: Deploy (Next.js)
       id: deploy_next
