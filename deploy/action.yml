@@ -19,6 +19,9 @@ inputs:
   NOTIFICATION_URL:
     description: Notification Webhook URL
     required: true
+  GH_TOKEN:
+    description: GitHub Account Token for creating deployments
+    required: false
 runs:
   using: composite
   steps:
@@ -41,12 +44,12 @@ runs:
       shell: bash
       run: |
         set -eux
-        
+
         if [ ! -f wrangler.json ]; then
           echo "error: no wrangler.json found"
           exit 1
         fi
-        
+
         cat wrangler.json | jq -r '.upload_source_maps' | grep -q "true"
         cat wrangler.json | jq -r '.observability.enabled' | grep -q "true"
 
@@ -94,6 +97,7 @@ runs:
         fi
 
         echo "Deployment URL: $url"
+        echo "deployment_url=$url" >> $GITHUB_ENV
 
         # check if it returns success
         sleep 10
@@ -104,6 +108,59 @@ runs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       shell: bash
       run: sleep 10
+
+    - name: Create GitHub Deployment
+      if: inputs.GH_TOKEN != ''
+      shell: bash
+      run: |
+        set -eux
+
+        # Determine if this is a production or preview deployment
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          environment="production"
+        else
+          environment="preview"
+        fi
+
+        # Create the deployment using GitHub API
+        response=$(curl -s -X POST \
+          -H "Authorization: token ${{ inputs.GH_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d "{\
+            \"ref\": \"${{ github.ref }}\",\
+            \"environment\": \"$environment\",\
+            \"auto_merge\": false,\
+            \"required_contexts\": [],\
+            \"description\": \"Deployment from GitHub Actions\",\
+            \"transient_environment\": ${{ github.ref != 'refs/heads/main' }}\
+          }" \
+          https://api.github.com/repos/${{ github.repository }}/deployments)
+
+        # Extract the deployment ID
+        deployment_id=$(echo "$response" | jq -r '.id')
+
+        if [ "$deployment_id" == "null" ]; then
+          echo "Failed to create deployment:"
+          echo "$response" | jq .
+          exit 1
+        fi
+
+        echo "Created GitHub deployment with ID: $deployment_id"
+
+        # Create a deployment status
+        status_response=$(curl -s -X POST \
+          -H "Authorization: token ${{ inputs.GH_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d "{\
+            \"state\": \"success\",\
+            \"environment\": \"$environment\",\
+            \"environment_url\": \"${{ env.deployment_url }}\",\
+            \"log_url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\
+            \"description\": \"Deployment completed successfully\"\
+          }" \
+          https://api.github.com/repos/${{ github.repository }}/deployments/$deployment_id/statuses)
+
+        echo "Created deployment status: $status_response"
 
     - name: Purge Cloudflare Cache
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' && inputs.CF_CACHE_API_KEY != '' && inputs.CF_ZONE_ID != ''
