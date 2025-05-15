@@ -63,19 +63,9 @@ runs:
         command: pages deploy .vercel/output/static/
         workingDirectory: "."
 
-    - name: Deploy (Worker)
-      id: deploy_worker_main
-      if: env.kind == 'worker' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: cloudflare/wrangler-action@v3.14.1
-      with:
-        apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
-        accountId: ${{ inputs.CF_ACCOUNT_ID }}
-        command: deploy
-        workingDirectory: "."
-
-    - name: Preview (Worker)
-      id: deploy_worker_preview
-      if: env.kind == 'worker' && ((github.event_name == 'push' && github.ref != 'refs/heads/main') || github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+    - name: Upload Version (Worker)
+      id: upload_worker
+      if: env.kind == 'worker'
       uses: cloudflare/wrangler-action@v3.14.1
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
@@ -90,10 +80,7 @@ runs:
 
         url="${{ steps.deploy_next.outputs.deployment-url }}"
         if [ -z "$url" ]; then
-          url="${{ steps.deploy_worker_main.outputs.deployment-url }}"
-        fi
-        if [ -z "$url" ]; then
-          url="${{ steps.deploy_worker_preview.outputs.deployment-url }}"
+          url="${{ steps.upload_worker.outputs.deployment-url }}"
         fi
 
         echo "Deployment URL: $url"
@@ -103,6 +90,29 @@ runs:
         sleep 10
 
         curl -fvs -H "Cookie: bypass=true" "$url"
+
+    - name: Deploy Version (Worker Main)
+      id: deploy_worker_main
+      if: env.kind == 'worker' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      shell: bash
+      run: |
+        set -eux
+
+        # Extract the Version ID from the upload output
+        VERSION_ID=$(echo "${{ steps.upload_worker.outputs.command-output }}" | grep "Current Version ID:" | awk '{print $NF}')
+
+        if [ -z "$VERSION_ID" ]; then
+          echo "Error: Could not extract Version ID from upload output"
+          exit 1
+        fi
+
+        echo "Deploying version: $VERSION_ID"
+
+        # Deploy the specific version
+        pnpm wrangler versions deploy $VERSION_ID
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.CF_DEPLOY_API_KEY }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.CF_ACCOUNT_ID }}
 
     - name: Wait
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
