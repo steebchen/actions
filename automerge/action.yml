@@ -10,7 +10,7 @@ runs:
     - name: "Metadata"
       id: metadata
       if: ${{ github.actor == 'dependabot[bot]' }}
-      uses: dependabot/fetch-metadata@v2.3.0
+      uses: dependabot/fetch-metadata@v2.4.0
       with:
         github-token: "${{ inputs.token }}"
 
