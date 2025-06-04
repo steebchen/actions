@@ -70,7 +70,7 @@ runs:
       with:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
-        command: versions upload --message "${{ github.sha }} ${{ github.event.head_commit.message }}"
+        command: versions upload --message "${{ github.sha }}"
         workingDirectory: "."
 
     - name: Check Deployment URL
@@ -111,7 +111,7 @@ runs:
         echo "Deploying version: $VERSION_ID"
 
         # Deploy the specific version
-        pnpm wrangler versions deploy $VERSION_ID -y --message "${{ github.sha }} ${{ github.event.head_commit.message }}"
+        pnpm wrangler versions deploy $VERSION_ID -y --message "${{ github.sha }}"
       env:
         CLOUDFLARE_API_TOKEN: ${{ inputs.CF_DEPLOY_API_KEY }}
         CLOUDFLARE_ACCOUNT_ID: ${{ inputs.CF_ACCOUNT_ID }}
