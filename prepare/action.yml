@@ -1,6 +1,11 @@
 name: prepare
 description: |
   Set up the environment with .tool-versions and caching, plus installing dependencies.
+inputs:
+  no-frozen-lockfile:
+    description: 'Disable --frozen-lockfile when installing dependencies'
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -34,4 +39,9 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install --frozen-lockfile
+      run: |
+        if [ "${{ inputs.no-frozen-lockfile }}" == "true" ]; then
+          pnpm install --no-frozen-lockfile
+        else
+          pnpm install --frozen-lockfile
+        fi
