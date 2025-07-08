@@ -4,6 +4,10 @@ inputs:
   token:
     description: GitHub token
     required: true
+  format-command:
+    description: Command to run for formatting (default is 'pnpm format')
+    required: false
+    default: 'pnpm format'
 runs:
   using: composite
   steps:
@@ -20,7 +24,7 @@ runs:
 
     - name: Run format
       shell: bash
-      run: pnpm format
+      run: ${{ inputs.format-command }}
 
     - name: Commit and push changes
       shell: bash
