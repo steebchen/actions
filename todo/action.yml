@@ -33,7 +33,7 @@ runs:
 
     - name: Prepare Environment
       if: ${{ inputs.format-command != '' }}
-      uses: ./prepare
+      uses: steebchen/actions/prepare@main
 
     - name: Run Format Command
       if: ${{ inputs.format-command != '' }}
