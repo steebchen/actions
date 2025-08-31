@@ -31,6 +31,10 @@ runs:
         git config --global user.name "Luca Steeb"
         git config --global user.email "contact@luca-steeb.com"
 
+    - name: Prepare Environment
+      if: ${{ inputs.format-command != '' }}
+      uses: ./prepare
+
     - name: Run Format Command
       if: ${{ inputs.format-command != '' }}
       shell: bash
