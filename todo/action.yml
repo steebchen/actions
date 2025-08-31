@@ -5,6 +5,9 @@ inputs:
   token:
     description: "GitHub token for authentication"
     required: true
+  format-command:
+    description: "Optional command to run for formatting before committing"
+    required: false
 
 runs:
   using: "composite"
@@ -27,6 +30,11 @@ runs:
       run: |
         git config --global user.name "Luca Steeb"
         git config --global user.email "contact@luca-steeb.com"
+
+    - name: Run Format Command
+      if: ${{ inputs.format-command != '' }}
+      shell: bash
+      run: ${{ inputs.format-command }}
 
     - name: Commit and Push Changes
       shell: bash
