@@ -202,6 +202,7 @@ runs:
       with:
         message: deploy success ✅
         webhook_url: ${{ inputs.NOTIFICATION_URL }}
+        working-directory: ${{ inputs.working-directory }}
 
     - name: Notify
       uses: steebchen/actions/notify@main
@@ -209,3 +210,4 @@ runs:
       with:
         message: deploy failed ❌
         webhook_url: ${{ inputs.NOTIFICATION_URL }}
+        working-directory: ${{ inputs.working-directory }}

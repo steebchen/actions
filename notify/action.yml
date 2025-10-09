@@ -7,11 +7,16 @@ inputs:
   webhook_url:
     description: Notification Webhook URL
     required: true
+  working-directory:
+    description: Working directory to read package.json from
+    required: false
+    default: '.'
 runs:
   using: composite
   steps:
     - name: Gather info
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         # read package.json name and save it
         package_name=$(cat package.json | jq -r '.name')
