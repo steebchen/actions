@@ -6,11 +6,16 @@ inputs:
     description: 'Disable --frozen-lockfile when installing dependencies'
     required: false
     default: 'false'
+  working-directory:
+    description: 'Working directory for setup and install commands'
+    required: false
+    default: '.'
 runs:
   using: composite
   steps:
     - name: Collect versions
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         echo "nodejs_version=$(cat .tool-versions | grep 'nodejs' | cut -d ' ' -f 2)" >> "$GITHUB_ENV"
         echo "pnpm_version=$(cat .tool-versions | grep 'pnpm' | cut -d ' ' -f 2)" >> "$GITHUB_ENV"
@@ -25,20 +30,21 @@ runs:
       with:
         node-version: ${{ env.nodejs_version }}
         cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
 
     - name: Cache
       uses: actions/cache@v4.2.3
       with:
         path: |
-          ${{ github.workspace }}/.next/cache
-        key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          ${{ inputs.working-directory }}/.next/cache
+        key: ${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}-${{ hashFiles(format('{0}/**/*.[jt]s', inputs.working-directory), format('{0}/**/*.[jt]sx', inputs.working-directory)) }}
         restore-keys: |
-          ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-
+          ${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}-
           ${{ runner.os }}-
 
     - name: Install dependencies
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         if [ "${{ inputs.no-frozen-lockfile }}" == "true" ]; then
           pnpm install --no-frozen-lockfile

@@ -22,11 +22,16 @@ inputs:
   GH_TOKEN:
     description: GitHub Account Token for creating deployments
     required: false
+  working-directory:
+    description: Working directory for build and deploy commands
+    required: false
+    default: '.'
 runs:
   using: composite
   steps:
     - name: Build
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         if grep -q "next-on-pages" package.json; then
           pnpm next-on-pages
@@ -42,6 +47,7 @@ runs:
 
     - name: Ensure flags
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         set -eux
 
@@ -61,7 +67,7 @@ runs:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
         command: pages deploy .vercel/output/static/
-        workingDirectory: "."
+        workingDirectory: ${{ inputs.working-directory }}
 
     - name: Upload Version (Worker)
       id: upload_worker
@@ -71,7 +77,7 @@ runs:
         apiToken: ${{ inputs.CF_DEPLOY_API_KEY }}
         accountId: ${{ inputs.CF_ACCOUNT_ID }}
         command: versions upload --message "${{ github.sha }}"
-        workingDirectory: "."
+        workingDirectory: ${{ inputs.working-directory }}
 
     - name: Check Deployment URL
       shell: bash
@@ -95,12 +101,13 @@ runs:
       id: deploy_worker_main
       if: env.kind == 'worker' && github.event_name == 'push' && github.ref == 'refs/heads/main'
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         set -ux
 
         # Extract the Version ID from the upload output
         VERSION_ID=$(echo "${{ steps.upload_worker.outputs.command-output }}" | grep "Version ID:" | awk '{print $NF}')
-        
+
         set -e
 
         if [ -z "$VERSION_ID" ]; then
