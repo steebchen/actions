@@ -17,6 +17,10 @@ runs:
         token: ${{ inputs.token }}
         ref: "${{ github.event.pull_request.head.ref }}"
 
+    - name: Fetch main branch
+      shell: bash
+      run: git fetch origin main
+
     - name: Prepare
       uses: steebchen/actions/prepare@main
       with:
