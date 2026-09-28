@@ -37,7 +37,7 @@ runs:
       with:
         path: |
           ${{ inputs.working-directory }}/.next/cache
-        key: ${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}-${{ hashFiles(format('{0}/**/*.[jt]s', inputs.working-directory), format('{0}/**/*.[jt]sx', inputs.working-directory)) }}
+        key: ${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}-
           ${{ runner.os }}-
